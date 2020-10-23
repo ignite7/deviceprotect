@@ -5,6 +5,9 @@ CLI
 # Click
 import click
 
+# Modules
+from services.files import FileService
+
 
 @click.group(help='What do you want to do?')
 def cli():
@@ -33,7 +36,10 @@ def file(encrypt, decrypt):
     Manage files.
     """
 
-    pass
+    FileService(
+        encrypt=encrypt,
+        decrypt=decrypt
+    )
 
 
 @cli.command(help='Device options.')
