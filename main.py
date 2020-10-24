@@ -6,7 +6,7 @@ CLI
 import click
 
 # Modules
-from services.files import FileService
+from services.encrypt import EncryptService
 
 
 @click.group(help='What do you want to do?')
@@ -20,45 +20,51 @@ def cli():
 
 @cli.command(help='File options.')
 @click.option(
-    '--encrypt',
-    '-e',
+    '--file',
+    '-f',
     type=(str),
     help='[PATH] file.'
 )
 @click.option(
-    '--decrypt',
+    '--device',
     '-d',
     type=(str),
-    help='[PATH] file.'
+    help='[PATH] device.'
 )
-def file(encrypt, decrypt):
+def encrypt(file, device):
     """
-    Manage files.
+    Manage encrypt files and devices.
     """
 
-    FileService(
-        encrypt=encrypt,
-        decrypt=decrypt
+    EncryptService(
+        file=file,
+        device=device
     )
 
 
 @cli.command(help='Device options.')
 @click.option(
-    '--encrypt',
-    '-e',
+    '--file',
+    '-f',
     type=(str),
-    help='[PATH] device.'
-    
-)  
+    help='[PATH] file.'
+)
 @click.option(
-    '--decrypt',
+    '--device',
     '-d',
     type=(str),
     help='[PATH] device.'
-)  
-def device(encrypt, decrypt):
+)
+@click.option(
+    '--key',
+    '-k',
+    type=(str),
+    required=True,
+    help='[PATH] key.'
+)
+def decrypt(file, device, key):
     """
-    Manage device.
+    Manage decrypt fiiles and devices.
     """
 
     pass

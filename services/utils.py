@@ -22,6 +22,32 @@ def create_key():
     return Fernet.generate_key()
 
 
+def find_files(user_path):
+    """
+    Iterate for the path the
+    user gave and find all
+    files.
+    """
+
+    if os.path.isfile(user_path):
+        patterns = [user_path]
+
+    elif os.path.isdir(user_path):
+        accumulate = []
+        patterns = user_path.rstrip('/') + \
+            '/{}'.format(next(os.walk(user_path))[1])
+
+        for pattern in patterns:
+            if os.path.isfile(pattern):
+                accumulate.append(pattern)
+
+            else:
+                #TODO: Improve idea
+                pass
+
+    return patterns or accumulate
+
+
 def output(key, file_path):
     """
     Shows the output to the user.
