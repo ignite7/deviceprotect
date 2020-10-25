@@ -27,29 +27,31 @@ class EncryptService:
 
     def encrypt(self):
         """
-        Encrypt files.
+        Encrypting files.
         """
 
         if os.path.isfile(self.kwargs):
-            with open(self.kwargs, 'rb') as raw_file:
-                file_data = raw_file.read()
-
-            encrypt_data = self.fernet.encrypt(file_data)
-
-            with open(self.kwargs, 'wb') as raw_file:
-                raw_file.write(encrypt_data)
+            self.iter_encrypt(self.kwargs)
 
         elif os.path.isdir(self.kwargs):
             for dirs_path, dirs, files in os.walk(self.kwargs):
                 for name in files:
-                    rel_path = os.path.join(dirs_path, name)
-
-                    with open(rel_path, 'rb') as raw_file:
-                        file_data = raw_file.read()
-
-                    encrypt_data = self.fernet.encrypt(file_data)
-
-                    with open(rel_path, 'wb') as raw_file:
-                        raw_file.write(encrypt_data)
+                    self.iter_encrypt(os.path.join(dirs_path, name))
 
         return output(self.key, self.kwargs)
+
+    def iter_encrypt(self, path):
+        """
+        Iterate by the path, encrypting
+        one by one.
+        """
+
+        with open(path, 'rb') as raw_file:
+            file_data = raw_file.read()
+
+        encrypt_data = self.fernet.encrypt(file_data)
+
+        with open(path, 'wb') as raw_file:
+            raw_file.write(encrypt_data)
+
+
