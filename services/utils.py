@@ -36,7 +36,7 @@ def output(key, file_path):
 
     message = (
         'IMPORTANT DATA.\nKEY: {}\nPATH: {}\n'
-    ).format(key, file_path)
+    ).format(key.decode(), file_path)
 
     with open(user_path, 'w') as raw_file:
         raw_file.write(message)

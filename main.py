@@ -4,9 +4,10 @@ CLI
 
 # Click
 import click
+from click.exceptions import UsageError
 
 # Modules
-from services.encrypt import EncryptService
+from services.service import Services
 
 
 @click.group(help='What do you want to do?')
@@ -20,7 +21,7 @@ def cli():
 
 @cli.command(help='File options.')
 @click.option(
-    '--file',
+    '--files',
     '-f',
     type=(str),
     help='[PATH] file.'
@@ -31,20 +32,26 @@ def cli():
     type=(str),
     help='[PATH] device.'
 )
-def encrypt(file, device):
+def encrypt(files, device):
     """
     Manage encrypt files and devices.
     """
 
-    EncryptService(
-        file=file,
-        device=device
+    if files and device:
+        raise UsageError(
+            message='Choose only one option between (`files`, `device`)'
+        )
+
+    Services(
+        file_path=files,
+        device_path=device,
+        service='encrypt'
     )
 
 
 @cli.command(help='Device options.')
 @click.option(
-    '--file',
+    '--files',
     '-f',
     type=(str),
     help='[PATH] file.'
@@ -62,12 +69,22 @@ def encrypt(file, device):
     required=True,
     help='[PATH] key.'
 )
-def decrypt(file, device, key):
+def decrypt(files, device, key):
     """
     Manage decrypt fiiles and devices.
     """
 
-    pass
+    if files and device:
+        raise UsageError(
+            message='Choose only one option between (`files`, `device`)'
+        )
+
+    Services(
+        file_path=files,
+        device_path=device,
+        key=key,
+        service='decrypt'
+    )
 
 
 if __name__ == '__main__':
