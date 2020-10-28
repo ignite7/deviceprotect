@@ -1,4 +1,4 @@
 # Essential
 click==7.1.2
-cryptography==3.1.1
+cryptography==3.2.1
 ipdb

@@ -31,7 +31,7 @@ class Services:
         Choose the type depending
         `user_path` value.
         """
-        
+
         for files_path in self.user_path:
             if path.isfile(files_path):
                 self.encryption(files_path)
