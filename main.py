@@ -31,10 +31,17 @@ def cli():
 @click.option(
     '--device',
     '-d',
+    multiple=True,
     type=(str),
     help='[PATH] device.'
 )
-def encrypt(files, device):
+@click.option(
+    '--multiple-keys',
+    '-m',
+    is_flag=True,
+    help='Generate key by [PATH]'
+)
+def encrypt(files, device, multiple_keys):
     """
     Manage encrypt files and
     devices.
@@ -50,13 +57,15 @@ def encrypt(files, device):
             if not path.isfile(is_file):
                 raise UsageError(message='The path is not a `file`.')
     elif device:
-        if not path.isdir(device) and not path.ismount(device):
-            raise UsageError(message='The path is not a `dir` or `mount`.')
+        for is_dir in device:
+            if not path.isdir(is_dir) and not path.ismount(is_dir):
+                raise UsageError(message='The path is not a `dir` or `mount`.')
 
 
     Services(
         files_path=files,
         device_path=device,
+        multiple_keys=multiple_keys,
         service='encrypt'
     )
 
@@ -72,6 +81,7 @@ def encrypt(files, device):
 @click.option(
     '--device',
     '-d',
+    multiple=True,
     type=(str),
     help='[PATH] device.'
 )
@@ -82,7 +92,13 @@ def encrypt(files, device):
     required=True,
     help='[PATH] key.'
 )
-def decrypt(files, device, key):
+@click.option(
+    '--multiple-keys',
+    '-m',
+    is_flag=True,
+    help='Generate key by [PATH]'
+)
+def decrypt(files, device, key, multiple_keys):
     """
     Manage decrypt fiiles and
     devices.
@@ -97,15 +113,16 @@ def decrypt(files, device, key):
         for is_file in files:
             if not path.isfile(is_file):
                 raise UsageError(message='The path is not a `file`.')
-
     elif device:
-        if not path.isdir(device) and not path.ismount(device):
-            raise UsageError(message='The path is not a `dir` or `mount`.')
+        for is_dir in device:
+            if not path.isdir(is_dir) and not path.ismount(is_dir):
+                raise UsageError(message='The path is not a `dir` or `mount`.')
 
-    Services(
+        Services(
         files_path=files,
         device_path=device,
-        key=key,
+        decrypt_key=key,
+        multiple_keys=multiple_keys,
         service='decrypt'
     )
 
