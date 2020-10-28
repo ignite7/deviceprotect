@@ -121,7 +121,7 @@ def decrypt(files, device, key, multiple_keys):
         Services(
         files_path=files,
         device_path=device,
-        decrypt_key=key,
+        key=key,
         multiple_keys=multiple_keys,
         service='decrypt'
     )
