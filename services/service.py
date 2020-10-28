@@ -21,7 +21,8 @@ class Services:
 
         self.service = kwargs['service']
         self.key = kwargs.get('key') or create_key()
-        self.user_path = list(kwargs['files_path']) or kwargs['device_path']
+        self.user_path = list(kwargs['files_path']) \
+            or list(kwargs['device_path'])
         self.fernet = Fernet(self.key)
         self.kind()
 
@@ -30,14 +31,14 @@ class Services:
         Choose the type depending
         `user_path` value.
         """
-
-        if isinstance(self.user_path, list):
-            for files_path in self.user_path:
+        
+        for files_path in self.user_path:
+            if path.isfile(files_path):
                 self.encryption(files_path)
-        elif path.isdir(self.user_path) or path.ismount(self.user_path):
-            for dirs_path, dirs, files in walk(self.user_path):
-                for name in files:
-                    self.encryption(path.join(dirs_path, name))
+            elif path.isdir(files_path) or path.ismount(files_path):
+                for dirs_path, dirs, files in walk(files_path):
+                    for name in files:
+                        self.encryption(path.join(dirs_path, name))
 
         return output(self.key, self.user_path)
 
