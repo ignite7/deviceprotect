@@ -1,3 +1,4 @@
 # Enviroment
 .venv/*
 services/__pycache__/*
+*.db

@@ -23,7 +23,7 @@ def create_key():
     return Fernet.generate_key()
 
 
-def output(key, file_path):
+def output(db_manager):
     """
     Shows the output to the user.
     """
@@ -34,9 +34,14 @@ def output(key, file_path):
     elif sys.platform.startswith('win32'):
         user_path = 'C:\\User\\{}/deviceprotect.txt'.format(USER)
 
-    message = (
-        'IMPORTANT DATA.\nKEY: {}\nPATH: {}\n'
-    ).format(key, file_path)
+    fields = db_manager.get(table='keys')
+    message = ''
+
+    for field in fields:
+        message += (
+            'ID: {} | KEY: {} | '
+            'PATH: {} | CRETATED AT: {}\n'
+        ).format(field[0], field[1].decode(), field[2], field[3])
 
     with open(user_path, 'w') as raw_file:
         raw_file.write(message)

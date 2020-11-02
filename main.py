@@ -89,16 +89,15 @@ def encrypt(files, device, multiple_keys):
     '--key',
     '-k',
     type=(str),
-    required=True,
     help='[PATH] key.'
 )
 @click.option(
-    '--multiple-keys',
-    '-m',
-    is_flag=True,
-    help='Generate key by [PATH]'
+    '--backup',
+    '-b',
+    type=(str),
+    help='[PATH] sqlite backup.'
 )
-def decrypt(files, device, key, multiple_keys):
+def decrypt(files, device, key, backup):
     """
     Manage decrypt fiiles and
     devices.
@@ -107,6 +106,11 @@ def decrypt(files, device, key, multiple_keys):
     if files and device:
         raise UsageError(
             message='Choose only one option between (`files`, `device`).'
+        )
+
+    if key and backup or not key and not backup:
+        raise UsageError(
+            message='Choose only one option between (`key`, `backup`).'
         )
 
     if files:
@@ -122,7 +126,7 @@ def decrypt(files, device, key, multiple_keys):
         files_path=files,
         device_path=device,
         key=key,
-        multiple_keys=multiple_keys,
+        backup=backup,
         service='decrypt'
     )
 

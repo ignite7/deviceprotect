@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet
 
 # Modules
 from .utils import create_key, output
+from .database import DataBase
 
 # Utilities
 from os import path, walk
@@ -16,14 +17,20 @@ from os import path, walk
 class Services:
     """Service class."""
 
+    db_manager = DataBase()
+
     def __init__(self, **kwargs):
         """Init method."""
 
+        self.db_manager.create()
         self.service = kwargs['service']
-        self.key = kwargs.get('key') or create_key()
         self.user_path = list(kwargs['files_path']) \
             or list(kwargs['device_path'])
+        self.key = kwargs.get('key') or create_key()
         self.fernet = Fernet(self.key)
+        self.multiple_keys = kwargs.get('multiple_keys')
+        #TODO make a new method for backups
+        self.backup = kwargs.get('backup', None)
         self.kind()
 
     def kind(self):
@@ -33,14 +40,32 @@ class Services:
         """
 
         for files_path in self.user_path:
+            if self.multiple_keys:
+                if self.service == 'encrypt':
+                    self.key = create_key()
+                    self.fernet = Fernet(self.key)
+
+            self.db_manager.insert_keys(
+                key=self.key,
+                path=files_path
+            )
+
             if path.isfile(files_path):
+                if self.service == 'encrypt':
+                    self.db_manager.insert_routes(
+                        path=files_path
+                    )
                 self.encryption(files_path)
             elif path.isdir(files_path) or path.ismount(files_path):
-                for dirs_path, dirs, files in walk(files_path):
-                    for name in files:
-                        self.encryption(path.join(dirs_path, name))
+                    for dirs_path, dirs, files in walk(files_path):
+                        for name in files:
+                            if self.service == 'encrypt':
+                                self.db_manager.insert_routes(
+                                    path=path.join(dirs_path, name)
+                                )
+                            self.encryption(path.join(dirs_path, name))
 
-        return output(self.key, self.user_path)
+        return output(self.db_manager)
 
     def encryption(self, path):
         """
@@ -58,6 +83,12 @@ class Services:
                 new_data = self.fernet.decrypt(file_data)
 
             with open(path, 'wb') as raw_file:
+                if self.service == 'encrypt':
+                    self.db_manager.update_routes(
+                        is_encrypted=1,
+                        path=path
+                    )
+
                 raw_file.write(new_data)
         except OSError:
             raise UsageError(
