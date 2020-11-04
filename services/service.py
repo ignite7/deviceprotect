@@ -7,7 +7,7 @@ from click.exceptions import UsageError
 from cryptography.fernet import Fernet
 
 # Modules
-from .utils import create_key, output
+from .utils import create_key, output, handler_dir_app
 from .database import DataBase
 
 # Utilities
@@ -22,17 +22,21 @@ class Services:
     def __init__(self, **kwargs):
         """Init method."""
 
-        self.db_manager.create()
         self.service = kwargs['service']
         self.user_path = list(kwargs['files_path']) \
             or list(kwargs['device_path'])
         self.key = kwargs.get('key') or create_key()
         self.fernet = Fernet(self.key)
         self.multiple_keys = kwargs.get('multiple_keys')
-        self.database = kwargs.get('backup', None)
-        
-        #TODO better manage of dirs
-        if self.database:
+        self.db_path = kwargs.get('backup', None)
+        self.dir_home = None
+
+        if self.service == 'encrypt':
+            self.dir_home = handler_dir_app(kwargs.get('save_path', None))
+            self.db_manager.connection(self.dir_home)
+            self.db_manager.create()
+
+        if self.db_path:
             self.backup()
         else:
             self.kind()
@@ -43,7 +47,7 @@ class Services:
         and its paths.
         """
 
-        data = self.db_manager.backup(database=self.database)
+        data = self.db_manager.backup(db_path=self.db_path)
 
         for path in data:
             self.user_path = [path[1]]
@@ -86,7 +90,7 @@ class Services:
                                 )
                             self.encryption(path.join(dirs_path, name))
 
-        return output(self.db_manager, self.service)
+        return output(self.db_manager, self.service, self.dir_home)
 
     def encryption(self, path):
         """
@@ -105,7 +109,7 @@ class Services:
 
             with open(path, 'wb') as raw_file:
                 raw_file.write(new_data)
-                
+
                 if self.service == 'encrypt':
                     self.db_manager.update_routes(
                         is_encrypted=1,

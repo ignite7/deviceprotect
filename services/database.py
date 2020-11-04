@@ -8,7 +8,7 @@ from click.exceptions import UsageError
 
 # Utilities
 from pathlib import Path
-import os
+from os import path
 import sys
 import shutil
 
@@ -16,21 +16,10 @@ import shutil
 class DataBase:
     """Data base class."""
 
-    dir_home = str(Path.home())
+    def connection(self, dir_home):
+        """Connection database."""
 
-    def __init__(self):
-        """Init method."""
-
-        try:
-            if sys.platform.startswith('linux'):
-                os.mkdir('{}/deviceprotect'.format(self.dir_home))
-            elif sys.platform.startswith('win32'):
-                os.mkdir('{}\\deviceprotect'.format(self.dir_home))
-        except OSError:
-            pass
-
-        self.sum_dir = '{}/deviceprotect'.format(self.dir_home)
-        self.conn = sqlite3.connect('{}/backup.db'.format(self.sum_dir))
+        self.conn = sqlite3.connect(path.join(dir_home, 'backup.db'))
         self.cursor = self.conn.cursor()
 
     def create(self):
@@ -125,7 +114,9 @@ class DataBase:
         """Get backup operation."""
 
         try:
-            data = self.cursor.execute('SELECT KEY, PATH FROM keys')
+            conn = sqlite3.connect(kwargs['db_path'])
+            cursor = conn.cursor()
+            data = cursor.execute('SELECT KEY, PATH FROM keys')
         except sqlite3.OperationalError:
             raise UsageError(message='Invalid keys path.')
 

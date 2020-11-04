@@ -39,9 +39,15 @@ def cli():
     '--multiple-keys',
     '-m',
     is_flag=True,
-    help='Generate key by [PATH]'
+    help='Generate key by [PATH].'
 )
-def encrypt(files, device, multiple_keys):
+@click.option(
+    '--save-path',
+    '-s',
+    type=(str),
+    help='Custom save [PATH].'
+)
+def encrypt(files, device, multiple_keys, save_path):
     """
     Manage encrypt files and
     devices.
@@ -61,11 +67,11 @@ def encrypt(files, device, multiple_keys):
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
 
-
     Services(
         files_path=files,
         device_path=device,
         multiple_keys=multiple_keys,
+        save_path=save_path,
         service='encrypt'
     )
 
