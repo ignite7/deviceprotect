@@ -29,14 +29,34 @@ class Services:
         self.key = kwargs.get('key') or create_key()
         self.fernet = Fernet(self.key)
         self.multiple_keys = kwargs.get('multiple_keys')
-        #TODO make a new method for backups
-        self.backup = kwargs.get('backup', None)
-        self.kind()
+        self.database = kwargs.get('backup', None)
+        
+        #TODO better manage of dirs
+        if self.database:
+            self.backup()
+        else:
+            self.kind()
+
+    def backup(self):
+        """
+        Read the database for keys
+        and its paths.
+        """
+
+        data = self.db_manager.backup(database=self.database)
+
+        for path in data:
+            self.user_path = [path[1]]
+            self.key = path[0]
+            self.fernet = Fernet(self.key)
+            self.kind()
 
     def kind(self):
         """
         Choose the type depending
-        `user_path` value.
+        `user_path` value, this method
+        is used for iterate files encrypted
+        and files not encrypted.
         """
 
         for files_path in self.user_path:
@@ -45,10 +65,11 @@ class Services:
                     self.key = create_key()
                     self.fernet = Fernet(self.key)
 
-            self.db_manager.insert_keys(
-                key=self.key,
-                path=files_path
-            )
+            if self.service == 'encrypt':
+                self.db_manager.insert_keys(
+                    key=self.key.decode(),
+                    path=files_path
+                )
 
             if path.isfile(files_path):
                 if self.service == 'encrypt':
@@ -65,7 +86,7 @@ class Services:
                                 )
                             self.encryption(path.join(dirs_path, name))
 
-        return output(self.db_manager)
+        return output(self.db_manager, self.service)
 
     def encryption(self, path):
         """
