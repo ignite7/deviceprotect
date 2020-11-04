@@ -30,7 +30,7 @@ def handler_dir_app(save_path):
         mkdir(app_dir)
     except OSError:
         now = date.today()
-        app_dir += now.strftime('%m-%d-%y_%H:%M:%S')
+        app_dir += now.strftime('-%m-%d-%y-%H:%M:%S')
         mkdir(app_dir)
 
     return app_dir
