@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  app:
+    container_name: deviceprotect_test
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /usr/src/deviceprotect
+    entrypoint: tail -f /dev/null
+    volumes:
+      - .:/usr/src/deviceprotect
+
