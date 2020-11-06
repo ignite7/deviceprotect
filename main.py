@@ -5,7 +5,8 @@ import click
 from click.exceptions import UsageError
 
 # Modules
-from services.service import Services
+from app.service import Services
+from app.database import DataBase
 
 # Utilities
 from os import path
@@ -135,6 +136,43 @@ def decrypt(files, device, key, backup):
         backup=backup,
         service='decrypt'
     )
+
+
+@cli.command(help='Recovery options.')
+@click.option(
+    '--db-path',
+    '-d',
+    type=(str),
+    help='Safe encryptation. backup [PATH].'
+)
+def recovery(db_path):
+    """
+    Manage the recovery of
+    the encryptation state
+    of the files or folders.
+    """
+
+    db_manager = DataBase()
+    query = db_manager.recovery(db_path=db_path)
+
+    #TODO Make testing of this operation
+    for data in query:
+        if data[4] and not data[3]:
+            Services(
+                files_path=data[0],
+                device_path=data[0],
+                multiple_keys=None,
+                save_path=data[2],
+                service='encrypt'
+            )
+        elif not data[4] and data[3]:
+            Services(
+                files_path=data[0],
+                device_path=data[0],
+                key=data[1],
+                backup=None,
+                service='decrypt'
+            )
 
 
 if __name__ == '__main__':

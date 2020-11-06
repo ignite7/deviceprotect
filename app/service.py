@@ -33,8 +33,10 @@ class Services:
 
         if self.service == 'encrypt':
             self.dir_home = handler_dir_app(kwargs.get('save_path', None))
-            self.db_manager.connection(self.dir_home)
-            self.db_manager.create()
+            self.detail_id = self.db_manager.connection(
+                save_path=self.dir_home,
+                is_encrypted=True
+            )
 
         if self.db_path:
             self.backup()
@@ -70,7 +72,7 @@ class Services:
                     self.fernet = Fernet(self.key)
 
             if self.service == 'encrypt':
-                self.db_manager.insert_keys(
+                self.key_id = self.db_manager.insert_keys(
                     key=self.key.decode(),
                     path=files_path
                 )
@@ -78,7 +80,9 @@ class Services:
             if path.isfile(files_path):
                 if self.service == 'encrypt':
                     self.db_manager.insert_routes(
-                        path=files_path
+                        path=files_path,
+                        key_id=self.key_id,
+                        detail_id=self.detail_id
                     )
                 self.encryption(files_path)
             elif path.isdir(files_path) or path.ismount(files_path):
@@ -86,7 +90,9 @@ class Services:
                         for name in files:
                             if self.service == 'encrypt':
                                 self.db_manager.insert_routes(
-                                    path=path.join(dirs_path, name)
+                                    path=path.join(dirs_path, name),
+                                    key_id=self.key_id,
+                                    detail_id=self.detail_id
                                 )
                             self.encryption(path.join(dirs_path, name))
 

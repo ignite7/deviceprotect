@@ -22,7 +22,10 @@ def handler_dir_app(save_path):
     dir_home = str(Path.home())
 
     if save_path:
-        app_dir = path.join(save_path, 'deviceprotect')
+        if not path.exists(path.join(save_path, 'backup.db')):
+            app_dir = path.join(save_path, 'deviceprotect')
+        else:
+            return save_path
     else:
         app_dir = path.join(dir_home, 'deviceprotect')
 
