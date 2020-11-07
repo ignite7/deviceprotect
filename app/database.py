@@ -29,7 +29,7 @@ class DataBase:
                 CREATE TABLE details
                 (ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 SAVE_PATH TEXT NOT NULL,
-                IS_ENCRYPTED BOOLEAN NOT NULL,
+                ACTION TEXT NOT NULL,
                 CREATED_AT DATETIME DEFAULT CURRENT_TIMESTAMP)
             ''')
             self.cursor.execute('''
@@ -52,9 +52,9 @@ class DataBase:
             pass
 
         self.cursor.execute('''
-            INSERT INTO details (SAVE_PATH, IS_ENCRYPTED)
-            VALUES("{}", {})
-        '''.format(kwargs['save_path'], kwargs['is_encrypted']))
+            INSERT INTO details (SAVE_PATH, ACTION)
+            VALUES("{}", "{}")
+        '''.format(kwargs['save_path'], kwargs['action']))
         query = self.cursor.execute('SELECT ID FROM details')
 
         for data in query:
@@ -98,6 +98,7 @@ class DataBase:
             )
         except sqlite3.OperationalError:
             raise UsageError(message='Something was wrong.')
+
         self.conn.commit()
         query = self.cursor.execute(
             'SELECT ID FROM keys WHERE PATH="{}"'.format(kwargs['path'])
@@ -123,17 +124,22 @@ class DataBase:
 
         self.conn.commit()
 
-    def get(self, **kwargs):
+    def get(self):
         """Get operation."""
 
         try:
-            data = self.cursor.execute('SELECT * FROM {}'.format(
-                kwargs['table']
-            ))
+            query = self.cursor.execute('''
+                SELECT d.SAVE_PATH, d.ACTION,
+                k.PATH, k.KEY, r.PATH,
+                r.IS_ENCRYPTED, r.CREATED_AT
+                FROM routes AS r
+                INNER JOIN keys AS k ON r.ID_KEY=k.ID
+                INNER JOIN details AS d ON r.ID_DETAIL=d.ID
+            ''')
         except sqlite3.OperationalError:
             raise UsageError(message='Database not found.')
 
-        return data
+        return query
 
     def backup(self, **kwargs):
         """Get backup operation."""
@@ -141,25 +147,9 @@ class DataBase:
         try:
             conn = sqlite3.connect(kwargs['db_path'])
             cursor = conn.cursor()
-            data = cursor.execute('SELECT KEY, PATH FROM keys')
+            query = cursor.execute('SELECT KEY, PATH FROM keys')
         except sqlite3.OperationalError:
             raise UsageError(message='Invalid database [PATH].')
 
-        return data
+        return query
 
-    def recovery(self, **kwargs):
-        """Recovery operation."""
-
-        try:
-            conn = sqlite3.connect(kwargs['db_path'])
-            cursor = conn.cursor()
-            data = cursor.execute('''
-                SELECT r.PATH, k.KEY, d.SAVE_PATH, r.IS_ENCRYPTED,
-                d.IS_ENCRYPTED FROM routes AS r
-                INNER JOIN keys AS k ON r.ID_KEY=k.ID
-                INNER JOIN details AS d ON r.ID_DETAIL=d.ID
-            ''')
-        except sqlite3.OperationalError:
-            raise UsageError(message='Invalid database [PATH].')
-
-        return data

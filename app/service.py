@@ -4,10 +4,15 @@
 from click.exceptions import UsageError
 
 # Fernet
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 # Modules
-from .utils import create_key, output, handler_dir_app
+from .utils import (
+    create_key,
+    handler_dir_app,
+    encrypt_output,
+    decrypt_output
+)
 from .database import DataBase
 
 # Utilities
@@ -22,23 +27,22 @@ class Services:
     def __init__(self, **kwargs):
         """Init method."""
 
-        self.service = kwargs['service']
-        self.user_path = list(kwargs['files_path']) \
-            or list(kwargs['device_path'])
+        self.service = kwargs.get('service', None)
+        self.user_path = list(kwargs.get('files_path', None)) \
+            or list(kwargs.get('device_path', None))
         self.key = kwargs.get('key') or create_key()
+        self.multiple_keys = kwargs.get('multiple_keys', None)
+        self.backup_path = kwargs.get('backup_path', None)
         self.fernet = Fernet(self.key)
-        self.multiple_keys = kwargs.get('multiple_keys')
-        self.db_path = kwargs.get('backup', None)
-        self.dir_home = None
 
         if self.service == 'encrypt':
             self.dir_home = handler_dir_app(kwargs.get('save_path', None))
             self.detail_id = self.db_manager.connection(
                 save_path=self.dir_home,
-                is_encrypted=True
+                action=self.service
             )
 
-        if self.db_path:
+        if self.backup_path:
             self.backup()
         else:
             self.kind()
@@ -49,11 +53,11 @@ class Services:
         and its paths.
         """
 
-        data = self.db_manager.backup(db_path=self.db_path)
+        query = self.db_manager.backup(db_path=self.backup_path)
 
-        for path in data:
-            self.user_path = [path[1]]
-            self.key = path[0]
+        for data in query:
+            self.user_path = [data[1]]
+            self.key = data[0]
             self.fernet = Fernet(self.key)
             self.kind()
 
@@ -96,7 +100,10 @@ class Services:
                                 )
                             self.encryption(path.join(dirs_path, name))
 
-        return output(self.db_manager, self.service, self.dir_home)
+        if self.service == 'encrypt':
+            return encrypt_output(self.db_manager)
+        else:
+            return decrypt_output()
 
     def encryption(self, path):
         """
@@ -129,3 +136,5 @@ class Services:
                     '`Run as administator` in Windows.'
                 )
             )
+        except InvalidToken:
+            raise UsageError(message='Invalid key.')

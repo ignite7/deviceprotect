@@ -22,10 +22,7 @@ def handler_dir_app(save_path):
     dir_home = str(Path.home())
 
     if save_path:
-        if not path.exists(path.join(save_path, 'backup.db')):
-            app_dir = path.join(save_path, 'deviceprotect')
-        else:
-            return save_path
+        app_dir = path.join(save_path, 'deviceprotect')
     else:
         app_dir = path.join(dir_home, 'deviceprotect')
 
@@ -48,31 +45,28 @@ def create_key():
     return Fernet.generate_key()
 
 
-def output(db_manager, service, dir_home):
-    """
-    Shows the output to the
-    user.
-    """
+def encrypt_output(db_manager):
+    """Shows the encrypt output."""
 
-    if not dir_home:
-        return print('Decrypting ends up successfully.')
+    query = db_manager.get()
+    message = 'SUMMARY INFO.\n'
 
-    sum_path = path.join(dir_home, 'summary.txt')
+    for data in query:
+        save_path = path.join(data[0], 'summary.txt')
+        message += (
+            '| ENTIRE PATH: {} | KEY: {} |\n'
+        ).format(data[2], data[3])
 
-    if service == 'encrypt':
-        fields = db_manager.get(table='keys')
-        message = 'SUMMARY INFO.\n'
+    with open(save_path, 'w') as f:
+        f.write(message)
 
-        for field in fields:
-            message += (
-                'ID: {} | KEY: {} | '
-                'PATH: {} | CRETATED AT: {}\n'
-            ).format(field[0], field[1], field[2], field[3])
+    return print(
+        'Encrypting ends up successfully\n',
+        'The info can be found: "{}".'.format(save_path)
+    )
 
-        with open(sum_path, 'w') as raw_file:
-            raw_file.write(message)
 
-        return print(
-            'Encrypting ends up successfully\n',
-            'The info can be found: "{}".'.format(sum_path)
-        )
+def decrypt_output():
+    """Shows the decrypt output."""
+
+    return print('Decrypting ends up successfully.')
