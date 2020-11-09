@@ -7,7 +7,6 @@ WORKDIR /usr/src/deviceprotect
 COPY . /usr/src/deviceprotect
 
 RUN apk update \
-  && apk add gcc musl-dev python3-dev libffi-dev openssl-dev \
+  && apk add gcc musl-dev python3-dev libffi-dev openssl-dev sqlite \
   && pip install --upgrade pip \
-  && pip install -r requirements/dev.txt \
-
+  && pip install -r requirements/dev.txt
