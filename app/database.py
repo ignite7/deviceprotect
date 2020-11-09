@@ -72,8 +72,13 @@ class DataBase:
                     kwargs['detail_id']
                 )
             )
-        except sqlite3.IntegrityError:
-            pass
+        except (KeyError, sqlite3.IntegrityError):
+            self.cursor.execute(
+                'UPDATE routes SET IS_ENCRYPTED={} WHERE PATH="{}"'.format(
+                    kwargs['is_encrypted'],
+                    kwargs['path']
+                )
+            )
         except sqlite3.OperationalError:
             raise UsageError(message='Something was wrong.')
 
@@ -107,31 +112,13 @@ class DataBase:
         for data in query:
             return data[0]
 
-    def update_routes(self, **kwargs):
-        """Update operation."""
-
-        try:
-            self.cursor.execute(
-                'UPDATE routes SET IS_ENCRYPTED={} WHERE PATH="{}"'.format(
-                    kwargs['is_encrypted'],
-                    kwargs['path']
-                )
-            )
-        except sqlite3.IntegrityError:
-            pass
-        except sqlite3.OperationalError:
-            raise UsageError(message='Something was wrong.')
-
-        self.conn.commit()
-
     def get(self):
         """Get operation."""
 
         try:
             query = self.cursor.execute('''
-                SELECT d.SAVE_PATH, d.ACTION,
-                k.PATH, k.KEY, r.PATH,
-                r.IS_ENCRYPTED, r.CREATED_AT
+                SELECT d.SAVE_PATH, k.PATH, k.KEY,
+                d.ACTION, r.PATH, r.IS_ENCRYPTED, r.CREATED_AT
                 FROM routes AS r
                 INNER JOIN keys AS k ON r.ID_KEY=k.ID
                 INNER JOIN details AS d ON r.ID_DETAIL=d.ID

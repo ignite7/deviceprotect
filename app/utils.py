@@ -49,16 +49,19 @@ def encrypt_output(db_manager):
     """Shows the encrypt output."""
 
     query = db_manager.get()
-    message = 'SUMMARY INFO.\n'
+    message = 'SUMMARY ENCRYPTATION INFO.\n'
 
     for data in query:
         save_path = path.join(data[0], 'summary.txt')
         message += (
-            '| ENTIRE PATH: {} | KEY: {} |\n'
-        ).format(data[2], data[3])
+            '|  MASTER PATH: {} | KEY: {} | ACTION: {} '
+            '| CHILD PATH: {} | IS_ENCRYPTED: {} | CREATED AT: {} |\n'
+        ).format(data[1], data[2], data[3], data[4], data[5], data[6])
 
     with open(save_path, 'w') as f:
         f.write(message)
+
+    db_manager.conn.close()
 
     return print(
         'Encrypting ends up successfully\n',

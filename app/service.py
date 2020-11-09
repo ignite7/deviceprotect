@@ -70,12 +70,11 @@ class Services:
         """
 
         for files_path in self.user_path:
-            if self.multiple_keys:
-                if self.service == 'encrypt':
+            if self.service == 'encrypt':
+                if self.multiple_keys:
                     self.key = create_key()
                     self.fernet = Fernet(self.key)
 
-            if self.service == 'encrypt':
                 self.key_id = self.db_manager.insert_keys(
                     key=self.key.decode(),
                     path=files_path
@@ -124,7 +123,7 @@ class Services:
                 raw_file.write(new_data)
 
                 if self.service == 'encrypt':
-                    self.db_manager.update_routes(
+                    self.db_manager.insert_routes(
                         is_encrypted=1,
                         path=path
                     )
