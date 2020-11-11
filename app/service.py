@@ -120,13 +120,13 @@ class Services:
                 new_data = self.fernet.decrypt(file_data)
 
             with open(path, 'wb') as raw_file:
-                raw_file.write(new_data)
-
                 if self.service == 'encrypt':
                     self.db_manager.insert_routes(
                         is_encrypted=1,
                         path=path
                     )
+
+                raw_file.write(new_data)
         except OSError:
             raise UsageError(
                 message=(
