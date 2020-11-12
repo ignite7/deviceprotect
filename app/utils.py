@@ -10,7 +10,7 @@ from datetime import date
 from pathlib import Path
 from os import path, mkdir
 import sys
-
+import uuid
 
 def handler_dir_app(save_path):
     """
@@ -29,8 +29,7 @@ def handler_dir_app(save_path):
     try:
         mkdir(app_dir)
     except OSError:
-        now = date.today()
-        app_dir += now.strftime('-%m-%d-%y-%H:%M:%S')
+        app_dir += '-{}'.format(uuid.uuid4())
         mkdir(app_dir)
 
     return app_dir
