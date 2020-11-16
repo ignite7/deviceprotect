@@ -1,3 +1,4 @@
 # Essential
-click==7.1.2
-cryptography==3.2.1
+click>=7.1.2
+cryptography>=3.2.1
+tqdm>=4.52.0

@@ -289,6 +289,7 @@ class TestEncryptation(unittest.TestCase):
                     'This is the example number: {}'.format(number),
                     f.read()
                 )
+
         self.finish_test(output)
 
     def test_save_path(self):
@@ -352,12 +353,21 @@ class TestEncryptation(unittest.TestCase):
             self.setUp()
             print('New test starting.')
 
+    def tearDown(self):
+        """Finish."""
+
+        try:
+            shutil.rmtree(self.dir_home)
+            print('Finish.')
+        except FileNotFoundError:
+            pass
+
 
 if __name__ == '__main__':
     unittest.main(
         verbosity=2,
         testRunner=HTMLTestRunner(
-            output='./reports',
-            report_name='encrypt_test'
+            output=os.path.join(BASE_DIR, 'test', 'reports'),
+            report_name='encryptation_test'
         )
     )

@@ -7,6 +7,7 @@ from click.exceptions import UsageError
 from cryptography.fernet import Fernet, InvalidToken
 
 # Utilities
+from tqdm import tqdm
 from os import path, walk
 import os
 import sys
@@ -75,7 +76,9 @@ class Services:
         and files not encrypted.
         """
 
-        for files_path in self.user_path:
+        status_bar = tqdm(self.user_path, desc='Progress', unit='file')
+
+        for files_path in status_bar:
             if self.service == 'encrypt':
                 if self.multiple_keys:
                     self.key = create_key()
@@ -143,3 +146,4 @@ class Services:
             )
         except InvalidToken:
             raise UsageError(message='Invalid key.')
+
