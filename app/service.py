@@ -6,17 +6,23 @@ from click.exceptions import UsageError
 # Fernet
 from cryptography.fernet import Fernet, InvalidToken
 
+# Utilities
+from os import path, walk
+import os
+import sys
+
+# Base dir
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 # Modules
-from .utils import (
+from app.utils import (
     create_key,
     handler_dir_app,
     encrypt_output,
     decrypt_output
 )
-from .database import DataBase
-
-# Utilities
-from os import path, walk
+from app.database import DataBase
 
 
 class Services:

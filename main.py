@@ -4,6 +4,9 @@
 import click
 from click.exceptions import UsageError
 
+# Fernet
+from cryptography.fernet import Fernet
+
 # Modules
 from app.service import Services
 from app.database import DataBase
@@ -59,6 +62,10 @@ def encrypt(files, device, multiple_keys, save_path):
             message='Choose only one option between (`files`, `device`).'
         )
 
+    if save_path:
+        if not path.isdir(save_path):
+            raise UsageError(message='The path is not a `dir`.')
+
     if files:
         for is_file in files:
             if not path.isfile(is_file):
@@ -68,6 +75,7 @@ def encrypt(files, device, multiple_keys, save_path):
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
 
+    print('Starting encryptation...')
     Services(
         files_path=files,
         device_path=device,
@@ -120,6 +128,12 @@ def decrypt(files, device, key, backup):
             message='Choose only one option between (`key`, `backup`).'
         )
 
+    if key:
+        try:
+            Fernet(key)
+        except (TypeError, ValueError):
+            raise UsageError(message='Invalid key.')
+
     if files:
         for is_file in files:
             if not path.isfile(is_file):
@@ -129,6 +143,7 @@ def decrypt(files, device, key, backup):
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
 
+    print('Starting decryptation...')
     Services(
         files_path=files,
         device_path=device,

@@ -15,8 +15,6 @@ import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
-# Services
-from app.service import Services
 
 class TestEncryptation(unittest.TestCase):
     """Test encryptation class."""
@@ -61,14 +59,17 @@ class TestEncryptation(unittest.TestCase):
             with open(files_path, 'w') as f:
                 f.write('This is the example number: {}'.format(number))
 
-    def test_encrypt_files_one_key(self):
+    def test_one_file_one_key(self):
         """
         This test it gonna to encrypt
-        only one file.
-        PATH: `./test_files/example1.txt`.
+        and decrypt only one file
+        with one key.
+        PATH: `{home}/test_files/{files}`.
         """
 
         path = os.path.join(self.dir_home, 'example1.txt')
+
+        # Encrypt
         output = subprocess.check_output(
             'python {} encrypt -f {}'.format(
                 self.dir_app,
@@ -78,19 +79,45 @@ class TestEncryptation(unittest.TestCase):
 
         # Check if the file has been encrypted
         with open(path, 'r') as f:
-            self.assertNotEqual('This is the first example', f.read())
+            self.assertNotEqual(
+                'This is the first example number: 1',
+                f.read()
+            )
+
+        # Decrypt
+        keys = []
+
+        with open(output, 'r') as f:
+            for key in f.read().split('|'):
+                if 'KEY' in key:
+                    keys.append(key.split('KEY: ')[1].rstrip())
+
+        subprocess.call('python {} decrypt -f {} -k {}'.format(
+                self.dir_app,
+                path,
+                keys[0]
+        ).split())
+
+        # Check the content inside the file is decrypted
+        with open(path, 'r') as f:
+            self.assertEqual(
+                'This is the first example number: 1',
+                f.read()
+            )
 
         self.finish_test(output)
 
-    def test_encrypt_files_multiple_keys(self):
+    def test_several_files_multiple_keys(self):
         """
-        This test it gonna to encrypt
-        several files.
-        PATH: `./test_files/example1.txt`.
+        This test it gonna to encrypt and decrypt
+        several files with multiple keys.
+        PATH: '{home}/test_files/{files}`.
         """
 
         path_1 = os.path.join(self.dir_home, 'example1.txt')
         path_2 = os.path.join(self.dir_home, 'example2.txt')
+
+        # Encrypt
         output = subprocess.check_output(
             'python {} encrypt -f {} -f {} -m'.format(
                 self.dir_app,
@@ -120,18 +147,38 @@ class TestEncryptation(unittest.TestCase):
                     f.read()
                 )
 
+        # Decrypt
+        subprocess.call('python {} decrypt -b {}'.format(
+            self.dir_app,
+            output.replace('summary.txt', 'backup.db')
+        ).split())
+
+        # Check the files has been decrypted
+        for number in range(1, 3):
+            files_path = os.path.join(
+                self.dir_home,
+                'example{}.txt'.format(number)
+            )
+            with open(files_path, 'r') as f:
+                self.assertEqual(
+                    'This is the first example number: {}'.format(number),
+                    f.read()
+                )
+
         self.finish_test(output)
 
-    def test_encrypt_devices_one_key(self):
+    def test_several_devices_one_key(self):
         """
-        This test it gonna to encrypt
-        several directories with only
-        one key.
+        This test it gonna to encrypt and
+        decrypt several directories with
+        only one key.
         PATH: `{home}/test_deviceprotect`
         """
 
         path_1 = os.path.join(self.dir_home, 'folder1')
         path_2 = os.path.join(self.dir_home, 'folder2')
+
+        # Encrypt
         output = subprocess.check_output(
             'python {} encrypt -d {} -d {}'.format(
                 self.dir_app,
@@ -162,18 +209,38 @@ class TestEncryptation(unittest.TestCase):
                     f.read()
                 )
 
+        # Decrypt
+        subprocess.call('python {} decrypt -b {}'.format(
+            self.dir_app,
+            output.replace('summary.txt', 'backup.db')
+        ).split())
+
+        # Check the files has been decrypted
+        for number in range(1, 7):
+            if number <= 3:
+                files_path = os.path.join(path_1, f'example{number}.txt')
+            else:
+                files_path = os.path.join(path_2, f'example{number}.txt')
+
+            with open(files_path, 'r') as f:
+                self.assertEqual(
+                    'This is the example number: {}'.format(number),
+                    f.read()
+                )
+
         self.finish_test(output)
 
-    def test_encrypt_devices_multiple_key(self):
+    def test_several_devices_multiple_keys(self):
         """
-        This test it gonna to encrypt
-        several directories with only
-        multiple keys.
+        This test it gonna to encrypt and decrypt
+        several directories with only multiple keys.
         PATH: `{home}/test_deviceprotect`
         """
 
         path_1 = os.path.join(self.dir_home, 'folder1')
         path_2 = os.path.join(self.dir_home, 'folder2')
+
+        # Encrypt
         output = subprocess.check_output(
             'python {} encrypt -d {} -d {} -m'.format(
                 self.dir_app,
@@ -204,17 +271,37 @@ class TestEncryptation(unittest.TestCase):
                     f.read()
                 )
 
+        # Decrypt
+        subprocess.call('python {} decrypt -b {}'.format(
+            self.dir_app,
+            output.replace('summary.txt', 'backup.db')
+        ).split())
+
+        # Check the files has been decrypted
+        for number in range(1, 7):
+            if number <= 3:
+                files_path = os.path.join(path_1, f'example{number}.txt')
+            else:
+                files_path = os.path.join(path_2, f'example{number}.txt')
+
+            with open(files_path, 'r') as f:
+                self.assertEqual(
+                    'This is the example number: {}'.format(number),
+                    f.read()
+                )
         self.finish_test(output)
 
-    def test_encrypt_files_save_path(self):
+    def test_save_path(self):
         """
-        This test it gonna to encrypt
-        one file and save the summary
-        in a custom directory.
-        PATH: `{home/test_encrypt/example1.txt}`
+        This test it gonna to encrypt and decrypt
+        one file and save the summary in a custom
+        directory.
+        PATH: `{home}/test_encrypt/{file}`
         """
 
         path = os.path.join(self.dir_home, 'example1.txt')
+
+        # Encrypt
         output = subprocess.check_output(
             'python {} encrypt -f {} -s {}'.format(
                 self.dir_app,
@@ -228,7 +315,23 @@ class TestEncryptation(unittest.TestCase):
 
         # Check if the file has been encrypted
         with open(path, 'r') as f:
-            self.assertNotEqual('This is the first example', f.read())
+            self.assertNotEqual(
+                'This is the first example number: 1',
+                f.read()
+            )
+
+        # Decrypt
+        subprocess.call('python {} decrypt -b {}'.format(
+            self.dir_app,
+            output.replace('summary.txt', 'backup.db')
+        ).split())
+
+        # Check if the file has been decrypted
+        with open(path, 'r') as f:
+            self.assertEqual(
+                'This is the first example number: 1',
+                f.read()
+            )
 
         self.finish_test(output, True)
 
