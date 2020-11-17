@@ -12,7 +12,7 @@ from app.service import Services
 from app.database import DataBase
 
 # Utilities
-from os import path
+from os import path, geteuid
 
 
 @click.group(help='What do you want to do?')
@@ -56,6 +56,11 @@ def encrypt(files, device, multiple_keys, save_path):
     Manage encrypt files and
     devices.
     """
+
+    if geteuid() != 0:
+        raise UsageError(
+            message='You need root/admin permissions to do this operation.'
+        )
 
     if files and device:
         raise UsageError(
@@ -117,6 +122,11 @@ def decrypt(files, device, key, backup):
     Manage decrypt fiiles and
     devices.
     """
+
+    if geteuid() != 0:
+        raise UsageError(
+            message='You need root/admin permissions to do this operation.'
+        )
 
     if files and device:
         raise UsageError(
