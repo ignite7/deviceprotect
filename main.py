@@ -61,7 +61,7 @@ def encrypt(files, device, multiple_keys, save_path):
             message='You need root/admin permissions to do this operation.'
         )
 
-    if files and device:
+    if files and device or not files and not device:
         raise UsageError(
             message='Choose only one option between (`files`, `device`).'
         )

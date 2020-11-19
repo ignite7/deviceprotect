@@ -114,20 +114,23 @@ class Services:
         """
 
         try:
-            with open(path, 'rb') as f:
-                old_data = f.read()
+            f = open(path, 'rb+')
+            old_data = f.read()
 
             if self.service == 'encrypt':
                 new_data = self.fernet.encrypt(old_data)
             elif self.service == 'decrypt':
                 new_data = self.fernet.decrypt(old_data)
 
-            with open(path, 'wb') as f:
-                f.write(new_data)
-                if self.service == 'encrypt':
-                    self.db_manager.insert_routes(
-                        is_encrypted=1,
-                        path=path
-                    )
+            f.seek(0)
+            f.write(new_data)
+            f.truncate()
+            f.close()
+
+            if self.service == 'encrypt':
+                self.db_manager.insert_routes(
+                    is_encrypted=1,
+                    path=path
+                )
         except InvalidToken:
             raise UsageError(message='Invalid key.')
