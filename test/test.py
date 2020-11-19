@@ -93,9 +93,9 @@ class TestEncryptation(unittest.TestCase):
                     keys.append(key.split('KEY: ')[1].rstrip())
 
         subprocess.call('python {} decrypt -f {} -k {}'.format(
-                self.dir_app,
-                path,
-                keys[0]
+            self.dir_app,
+            path,
+            keys[0]
         ).split())
 
         # Check the content inside the file is decrypted

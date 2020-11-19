@@ -17,12 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 # Modules
-from app.utils import (
-    create_key,
-    handler_dir_app,
-    encrypt_output,
-    decrypt_output
-)
+from app.utils import create_key, user_dir, output
 from app.database import DataBase
 
 
@@ -34,18 +29,20 @@ class Services:
     def __init__(self, **kwargs):
         """Init method."""
 
-        self.service = kwargs.get('service', None)
-        self.user_path = list(kwargs.get('files_path', None)) \
+        self.user_path = (
+            list(kwargs.get('files_path', None))
             or list(kwargs.get('device_path', None))
+        )
+        self.service = kwargs.get('service', None)
         self.key = kwargs.get('key') or create_key()
         self.multiple_keys = kwargs.get('multiple_keys', None)
         self.backup_path = kwargs.get('backup_path', None)
         self.fernet = Fernet(self.key)
 
         if self.service == 'encrypt':
-            self.dir_home = handler_dir_app(kwargs.get('save_path', None))
+            self.home_dir = user_dir(kwargs.get('save_path', None))
             self.detail_id = self.db_manager.connection(
-                save_path=self.dir_home,
+                save_path=self.home_dir,
                 action=self.service
             )
 
@@ -98,20 +95,17 @@ class Services:
                     )
                 self.encryption(files_path)
             elif path.isdir(files_path) or path.ismount(files_path):
-                    for dirs_path, dirs, files in walk(files_path):
-                        for name in files:
-                            if self.service == 'encrypt':
-                                self.db_manager.insert_routes(
-                                    path=path.join(dirs_path, name),
-                                    key_id=self.key_id,
-                                    detail_id=self.detail_id
-                                )
-                            self.encryption(path.join(dirs_path, name))
+                for dirs_path, dirs, files in walk(files_path):
+                    for name in files:
+                        if self.service == 'encrypt':
+                            self.db_manager.insert_routes(
+                                path=path.join(dirs_path, name),
+                                key_id=self.key_id,
+                                detail_id=self.detail_id
+                            )
+                        self.encryption(path.join(dirs_path, name))
 
-        if self.service == 'encrypt':
-            return encrypt_output(self.db_manager)
-        else:
-            return decrypt_output()
+        return output(self.service, self.db_manager, self.backup_path)
 
     def encryption(self, path):
         """
@@ -120,30 +114,20 @@ class Services:
         """
 
         try:
-            with open(path, 'rb') as raw_file:
-                file_data = raw_file.read()
+            with open(path, 'rb') as f:
+                old_data = f.read()
 
             if self.service == 'encrypt':
-                new_data = self.fernet.encrypt(file_data)
+                new_data = self.fernet.encrypt(old_data)
             elif self.service == 'decrypt':
-                new_data = self.fernet.decrypt(file_data)
+                new_data = self.fernet.decrypt(old_data)
 
-            with open(path, 'wb') as raw_file:
+            with open(path, 'wb') as f:
+                f.write(new_data)
                 if self.service == 'encrypt':
                     self.db_manager.insert_routes(
                         is_encrypted=1,
                         path=path
                     )
-
-                raw_file.write(new_data)
-        except OSError:
-            raise UsageError(
-                message=(
-                    'You must grant permission to the script, '
-                    'if you are in Linux try `sudo` or '
-                    '`Run as administator` in Windows.'
-                )
-            )
         except InvalidToken:
             raise UsageError(message='Invalid key.')
-

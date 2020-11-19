@@ -6,14 +6,12 @@ Utils service.
 from cryptography.fernet import Fernet
 
 # Utilities
-from datetime import date
 from pathlib import Path
-from os import path, mkdir
-import sys
+from os import path, mkdir, remove
 import uuid
 
 
-def handler_dir_app(save_path):
+def user_dir(save_path):
     """
     Handle the creation
     of the main directory
@@ -45,31 +43,32 @@ def create_key():
     return Fernet.generate_key()
 
 
-def encrypt_output(db_manager):
+def output(service, db_manager, backup_path):
     """Shows the encrypt output."""
 
-    query = db_manager.get()
-    message = 'SUMMARY ENCRYPTATION INFO.\n'
+    if service == 'encrypt':
+        query = db_manager.get()
+        message = 'SUMMARY ENCRYPTATION INFO.\n'
 
-    for data in query:
-        save_path = path.join(data[0], 'summary.txt')
-        message += (
-            '|  MASTER PATH: {} | KEY: {} | ACTION: {} '
-            '| CHILD PATH: {} | IS_ENCRYPTED: {} | CREATED AT: {} |\n'
-        ).format(data[1], data[2], data[3], data[4], data[5], data[6])
+        for data in query:
+            save_path = path.join(data[0], 'summary.txt')
+            message += (
+                '|  MASTER PATH: {} | KEY: {} | ACTION: {} '
+                '| CHILD PATH: {} | IS_ENCRYPTED: {} | CREATED AT: {} |\n'
+            ).format(data[1], data[2], data[3], data[4], data[5], data[6])
 
-    with open(save_path, 'w') as f:
-        f.write(message)
+        with open(save_path, 'w') as f:
+            f.write(message)
 
-    db_manager.conn.close()
+        db_manager.conn.close()
 
-    return print(
-        'Encrypting ends up successfully\n',
-        'The info can be found: "{}".'.format(save_path)
-    )
+        return print(
+            'Encrypting ends up successfully\n',
+            'The info can be found: "{}".'.format(save_path)
+        )
+    else:
+        if path.exists(backup_path):
+            remove(backup_path)
+            print('Backup deleted successfully.')
 
-
-def decrypt_output():
-    """Shows the decrypt output."""
-
-    return print('Decrypting ends up successfully.')
+        return print('Decrypting ends up successfully.')

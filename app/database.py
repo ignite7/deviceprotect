@@ -7,10 +7,7 @@ import sqlite3
 from click.exceptions import UsageError
 
 # Utilities
-from pathlib import Path
 from os import path
-import sys
-import shutil
 
 
 class DataBase:
@@ -139,4 +136,3 @@ class DataBase:
             raise UsageError(message='Invalid database [PATH].')
 
         return query
-

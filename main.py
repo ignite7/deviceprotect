@@ -9,7 +9,6 @@ from cryptography.fernet import Fernet
 
 # Modules
 from app.service import Services
-from app.database import DataBase
 
 # Utilities
 from os import path, geteuid
@@ -65,6 +64,11 @@ def encrypt(files, device, multiple_keys, save_path):
     if files and device:
         raise UsageError(
             message='Choose only one option between (`files`, `device`).'
+        )
+
+    if len(files) < 1 and multiple_keys or len(device) < 1 and multiple_keys:
+        raise UsageError(
+            message='Multiple keys is only allow for several files or devices.'
         )
 
     if save_path:
