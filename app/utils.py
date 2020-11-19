@@ -21,17 +21,17 @@ def user_dir(save_path):
     dir_home = str(Path.home())
 
     if save_path:
-        app_dir = path.join(save_path, 'deviceprotect')
+        app_user_dir = path.join(save_path, 'deviceprotect')
     else:
-        app_dir = path.join(dir_home, 'deviceprotect')
+        app_user_dir = path.join(dir_home, 'deviceprotect')
 
     try:
-        mkdir(app_dir)
+        mkdir(app_user_dir)
     except OSError:
-        app_dir += '-{}'.format(uuid.uuid4())
-        mkdir(app_dir)
+        app_user_dir += '-{}'.format(uuid.uuid4())
+        mkdir(app_user_dir)
 
-    return app_dir
+    return app_user_dir
 
 
 def create_key():
