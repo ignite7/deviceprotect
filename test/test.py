@@ -16,8 +16,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 
-class TestEncryptation(unittest.TestCase):
-    """Test encryptation class."""
+class EncryptionTest(unittest.TestCase):
+    """Encryption test class."""
 
     dir_home = os.path.join(str(Path.home()), 'test_deviceprotect')
     dir_app = os.path.join(BASE_DIR, 'main.py')
@@ -371,6 +371,6 @@ if __name__ == '__main__':
         verbosity=2,
         testRunner=HTMLTestRunner(
             output=os.path.join(BASE_DIR, 'test', 'reports'),
-            report_name='encryptation_test'
+            report_name='encryption_test'
         )
     )
