@@ -61,8 +61,8 @@ deviceprotect -b deviceprotect/backup.db
 
 ## Todo 📣
 
--[] Add more ways to save the output
--[] Lock database
+- Add more ways to save the output
+- Lock database
 
 ## Thanks 👏
 
