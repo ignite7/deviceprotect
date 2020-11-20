@@ -345,13 +345,16 @@ class TestEncryptation(unittest.TestCase):
         for the next test.
         """
 
-        shutil.rmtree(output.rstrip('summary.txt'))
-        shutil.rmtree(self.dir_home)
-        print('Test files generated deleted.')
+        try:
+            shutil.rmtree(output.rstrip('summary.txt'))
+            shutil.rmtree(self.dir_home)
+            print('Test files generated deleted.')
 
-        if not end:
-            self.setUp()
-            print('New test starting.')
+            if not end:
+                self.setUp()
+                print('New test starting.')
+        except FileNotFoundError:
+            pass
 
     def tearDown(self):
         """Finish."""

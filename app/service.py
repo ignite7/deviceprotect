@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 # Modules
-from app.utils import create_key, user_dir, output
+from app.utils import user_dir, output
 from app.database import DataBase
 
 
@@ -34,15 +34,15 @@ class Services:
             or list(kwargs.get('device_path', None))
         )
         self.service = kwargs.get('service', None)
-        self.key = kwargs.get('key') or create_key()
+        self.key = kwargs.get('key') or Fernet.generate_key()
         self.multiple_keys = kwargs.get('multiple_keys', None)
         self.backup_path = kwargs.get('backup_path', None)
         self.fernet = Fernet(self.key)
 
         if self.service == 'encrypt':
-            self.home_dir = user_dir(kwargs.get('save_path', None))
+            self.home_dir = user_dir(kwargs.get('output_path', None))
             self.detail_id = self.db_manager.connection(
-                save_path=self.home_dir,
+                output_path=self.home_dir,
                 action=self.service
             )
 
@@ -73,12 +73,10 @@ class Services:
         and files not encrypted.
         """
 
-        status_bar = tqdm(self.user_path, desc='Progress', unit='file')
-
-        for files_path in status_bar:
+        for files_path in tqdm(self.user_path, desc='Progress', unit='enc'):
             if self.service == 'encrypt':
                 if self.multiple_keys:
-                    self.key = create_key()
+                    self.key = Fernet.generate_key()
                     self.fernet = Fernet(self.key)
 
                 self.key_id = self.db_manager.insert_keys(
@@ -95,7 +93,7 @@ class Services:
                     )
                 self.encryption(files_path)
             elif path.isdir(files_path) or path.ismount(files_path):
-                for dirs_path, dirs, files in walk(files_path):
+                for dirs_path, _, files in walk(files_path):
                     for name in files:
                         if self.service == 'encrypt':
                             self.db_manager.insert_routes(
@@ -114,23 +112,17 @@ class Services:
         """
 
         try:
-            f = open(path, 'rb+')
-            old_data = f.read()
+            with open(path, 'rb+') as f:
+                old_data = f.read()
 
-            if self.service == 'encrypt':
-                new_data = self.fernet.encrypt(old_data)
-            elif self.service == 'decrypt':
-                new_data = self.fernet.decrypt(old_data)
+                if self.service == 'encrypt':
+                    new_data = self.fernet.encrypt(old_data)
+                    self.db_manager.insert_routes(is_encrypted=1, path=path)
+                else:
+                    new_data = self.fernet.decrypt(old_data)
 
-            f.seek(0)
-            f.write(new_data)
-            f.truncate()
-            f.close()
-
-            if self.service == 'encrypt':
-                self.db_manager.insert_routes(
-                    is_encrypted=1,
-                    path=path
-                )
+                f.seek(0)
+                f.write(new_data)
+                f.truncate()
         except InvalidToken:
             raise UsageError(message='Invalid key.')

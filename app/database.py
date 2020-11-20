@@ -17,7 +17,7 @@ class DataBase:
         """Connection database."""
 
         self.conn = sqlite3.connect(
-            path.join(kwargs['save_path'], 'backup.db')
+            path.join(kwargs['output_path'], 'backup.db')
         )
         self.cursor = self.conn.cursor()
 
@@ -51,7 +51,7 @@ class DataBase:
         self.cursor.execute('''
             INSERT INTO details (SAVE_PATH, ACTION)
             VALUES("{}", "{}")
-        '''.format(kwargs['save_path'], kwargs['action']))
+        '''.format(kwargs['output_path'], kwargs['action']))
         query = self.cursor.execute('SELECT ID FROM details')
 
         for data in query:

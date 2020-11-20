@@ -2,9 +2,6 @@
 Utils service.
 """
 
-# Fernet
-from cryptography.fernet import Fernet
-
 # Utilities
 from pathlib import Path
 from os import path, mkdir, remove
@@ -34,15 +31,6 @@ def user_dir(save_path):
     return app_user_dir
 
 
-def create_key():
-    """
-    Create and returns the master
-    key.
-    """
-
-    return Fernet.generate_key()
-
-
 def output(service, db_manager, backup_path):
     """Shows the encrypt output."""
 
@@ -67,8 +55,11 @@ def output(service, db_manager, backup_path):
             'The info can be found: "{}".'.format(save_path)
         )
     else:
-        if path.exists(backup_path):
-            remove(backup_path)
-            print('Backup deleted successfully.')
+        if backup_path:
+            try:
+                remove(backup_path)
+                print('Backup deleted successfully.')
+            except FileNotFoundError:
+                pass
 
         return print('Decrypting ends up successfully.')

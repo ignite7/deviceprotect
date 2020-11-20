@@ -45,12 +45,12 @@ def cli():
     help='Generate key by [PATH].'
 )
 @click.option(
-    '--save-path',
+    '--output-path',
     '-s',
     type=(str),
     help='Custom save [PATH].'
 )
-def encrypt(files, device, multiple_keys, save_path):
+def encrypt(files, device, multiple_keys, output_path):
     """
     Manage encrypt files and
     devices.
@@ -66,20 +66,25 @@ def encrypt(files, device, multiple_keys, save_path):
             message='Choose only one option between (`files`, `device`).'
         )
 
-    if len(files) < 1 and multiple_keys or len(device) < 1 and multiple_keys:
-        raise UsageError(
-            message='Multiple keys is only allow for several files or devices.'
-        )
-
-    if save_path:
-        if not path.isdir(save_path):
+    if output_path:
+        if not path.isdir(output_path):
             raise UsageError(message='The path is not a `dir`.')
 
     if files:
+        if multiple_keys and len(files) <= 1:
+            raise UsageError(
+                'Multiple keys is only allow for several files or devices.'
+            )
+
         for is_file in files:
             if not path.isfile(is_file):
                 raise UsageError(message='The path is not a `file`.')
     elif device:
+        if multiple_keys and len(device) <= 1:
+            raise UsageError(
+                'Multiple keys is only allow for several files or devices.'
+            )
+
         for is_dir in device:
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
@@ -89,7 +94,7 @@ def encrypt(files, device, multiple_keys, save_path):
         files_path=files,
         device_path=device,
         multiple_keys=multiple_keys,
-        save_path=save_path,
+        output_path=output_path,
         service='encrypt'
     )
 
@@ -136,6 +141,11 @@ def decrypt(files, device, key, backup):
         raise UsageError(
             message='Choose only one option between (`files`, `device`).'
         )
+
+    if not files and not device and not backup:
+        raise UsageError(message=(
+            'Choose only one option between (`files`, `device`, `backup`).'
+        ))
 
     if key and backup or not key and not backup:
         raise UsageError(
