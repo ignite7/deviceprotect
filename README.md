@@ -59,6 +59,20 @@ deviceprotect -d my_dir/ -k this_is_my_key
 deviceprotect -b deviceprotect/backup.db
 ```
 
+## Testing 🛠
+
+Run the tests on your local machine with docker.
+
+```bash
+cd deviceprotect/
+
+docker-compose up -d
+
+docker exec -it container_name sh
+
+python test/test.py
+```
+
 ## Todo 📣
 
 - Add more ways to save the output
