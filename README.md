@@ -19,7 +19,7 @@ pip install .
 
 **Note** that when you use encrypt is **important to save in a safe place
 the output** which contains an `summary.txt` with the logs and `backup.db`
-which is used to decrypt easily files.
+which is used to decrypt files easily.
 
 - Encrypt:
 
@@ -49,10 +49,10 @@ deviceprotect encrypt -f my_file.txt -s /tmp/new_path
 - Decrypt:
 
 ```bash
-# boring way to decrypt files
+# Boring way to decrypt files
 deviceprotect -f my_file_1.txt -k this_is_my_key
 
-# boring way to decrypt directories
+# Boring way to decrypt directories
 deviceprotect -d my_dir/ -k this_is_my_key
 
 # Best way to decrypt files or directories
