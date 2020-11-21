@@ -25,7 +25,7 @@ with open(path.join(BASE_DIR, 'README.md'), encoding='utf-8') as f:
 # Specifications of the setup
 setup(
     name='deviceprotect',
-    version='0.1v',
+    version='0.1',
     description='Encrypt your files safety!',
     long_description=read_me,
     url='https://www.sergiovanberkel.com/',

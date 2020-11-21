@@ -89,7 +89,7 @@ def encrypt(files, device, multiple_keys, output_path):
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
 
-    print('Starting encryptation...')
+    print('Starting encryption...')
     Services(
         files_path=files,
         device_path=device,
@@ -167,7 +167,7 @@ def decrypt(files, device, key, backup):
             if not path.isdir(is_dir) and not path.ismount(is_dir):
                 raise UsageError(message='The path is not a `dir` or `mount`.')
 
-    print('Starting decryptation...')
+    print('Starting decryption...')
     Services(
         files_path=files,
         device_path=device,
