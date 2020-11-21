@@ -1,6 +1,6 @@
 # Deviceprotect 🗂
 
-Device protect is an **CLI** tool made in python to make it easy to encrypt 
+Device protect is a **CLI** tool made in python to make it easy to encrypt 
 or decrypt your files without remember the any password. **Warning** this 
 is for encrypt or decrypt not large amounts of files, if you want to do it,
 do it at your own risk.
