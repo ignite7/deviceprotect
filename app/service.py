@@ -9,11 +9,10 @@ from cryptography.fernet import Fernet, InvalidToken
 # Utilities
 from tqdm import tqdm
 from os import path, walk
-import os
 import sys
 
 # Base dir
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 # Modules
@@ -29,7 +28,7 @@ class Services:
     def __init__(self, **kwargs):
         """Init method."""
 
-        self.user_path = (
+        self.content = (
             list(kwargs.get('files_path', None))
             or list(kwargs.get('device_path', None))
         )
@@ -60,7 +59,7 @@ class Services:
         query = self.db_manager.backup(db_path=self.backup_path)
 
         for data in query:
-            self.user_path = [data[1]]
+            self.content = [data[1]]
             self.key = data[0]
             self.fernet = Fernet(self.key)
             self.kind()
@@ -68,12 +67,12 @@ class Services:
     def kind(self):
         """
         Choose the type depending
-        `user_path` value, this method
+        `content` value, this method
         is used for iterate files encrypted
         and files not encrypted.
         """
 
-        for files_path in tqdm(self.user_path, desc='Progress', unit='enc'):
+        for files_path in tqdm(self.content, desc='Progress', unit='enc'):
             if self.service == 'encrypt':
                 if self.multiple_keys:
                     self.key = Fernet.generate_key()
@@ -81,19 +80,19 @@ class Services:
 
                 self.key_id = self.db_manager.insert_keys(
                     key=self.key.decode(),
-                    path=files_path
+                    path=path.abspath(files_path)
                 )
 
-            if path.isfile(files_path):
+            if path.isfile(path.abspath(files_path)):
                 if self.service == 'encrypt':
                     self.db_manager.insert_routes(
-                        path=files_path,
+                        path=path.abspath(files_path),
                         key_id=self.key_id,
                         detail_id=self.detail_id
                     )
                 self.encryption(files_path)
-            elif path.isdir(files_path) or path.ismount(files_path):
-                for dirs_path, _, files in walk(files_path):
+            else:
+                for dirs_path, _, files in walk(path.abspath(files_path)):
                     for name in files:
                         if self.service == 'encrypt':
                             self.db_manager.insert_routes(
@@ -103,26 +102,29 @@ class Services:
                             )
                         self.encryption(path.join(dirs_path, name))
 
-        return output(self.service, self.db_manager, self.backup_path)
+        output(self.service, self.db_manager)
 
-    def encryption(self, path):
+    def encryption(self, files_path):
         """
         Encrypt or decrypt the files
         depending of the service.
         """
 
         try:
-            with open(path, 'rb+') as f:
-                old_data = f.read()
+            with open(path.abspath(files_path), 'rb+') as files:
+                old_data = files.read()
 
                 if self.service == 'encrypt':
                     new_data = self.fernet.encrypt(old_data)
-                    self.db_manager.insert_routes(is_encrypted=1, path=path)
+                    self.db_manager.insert_routes(
+                        is_encrypted=1,
+                        path=path.abspath(files_path)
+                    )
                 else:
                     new_data = self.fernet.decrypt(old_data)
 
-                f.seek(0)
-                f.write(new_data)
-                f.truncate()
+                files.seek(0)
+                files.write(new_data)
+                files.truncate()
         except InvalidToken:
             raise UsageError(message='Invalid key.')

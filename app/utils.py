@@ -4,7 +4,7 @@ Utils service.
 
 # Utilities
 from pathlib import Path
-from os import path, mkdir, remove
+from os import path, mkdir
 import uuid
 
 
@@ -31,7 +31,7 @@ def user_dir(save_path):
     return app_user_dir
 
 
-def output(service, db_manager, backup_path):
+def output(service, db_manager):
     """Shows the encrypt output."""
 
     if service == 'encrypt':
@@ -55,11 +55,4 @@ def output(service, db_manager, backup_path):
             'The info can be found: "{}".'.format(save_path)
         )
     else:
-        if backup_path:
-            try:
-                remove(backup_path)
-                print('Backup deleted successfully.')
-            except FileNotFoundError:
-                pass
-
         return print('Decrypting ends up successfully.')
