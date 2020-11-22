@@ -36,10 +36,15 @@ class Services:
         self.key = kwargs.get('key') or Fernet.generate_key()
         self.multiple_keys = kwargs.get('multiple_keys', None)
         self.backup_path = kwargs.get('backup_path', None)
+        self.output_path = kwargs.get('output_path', None)
         self.fernet = Fernet(self.key)
 
         if self.service == 'encrypt':
-            self.home_dir = user_dir(kwargs.get('output_path', None))
+            if self.output_path:
+                self.home_dir = user_dir(path.abspath(self.output_path))
+            else:
+                self.home_dir = user_dir()
+
             self.detail_id = self.db_manager.connection(
                 output_path=self.home_dir,
                 action=self.service
@@ -56,7 +61,9 @@ class Services:
         and its paths.
         """
 
-        query = self.db_manager.backup(db_path=self.backup_path)
+        query = self.db_manager.backup(
+            db_path=path.abspath(self.backup_path)
+        )
 
         for data in query:
             self.content = [data[1]]

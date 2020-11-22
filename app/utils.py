@@ -8,7 +8,7 @@ from os import path, mkdir
 import uuid
 
 
-def user_dir(save_path):
+def user_dir(save_path=None):
     """
     Handle the creation
     of the main directory
